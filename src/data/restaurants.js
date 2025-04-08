@@ -1,0 +1,295 @@
+// Données de restaurants halal à Paris (exemples)
+export const restaurantsData = [
+  {
+    id: 1,
+    name: "Le Mezze Parisien",
+    address: "25 Rue du Faubourg Saint-Martin, 75010 Paris",
+    location: { lat: 48.870576, lng: 2.356771 },
+    cuisine: "libanais",
+    rating: 4.7,
+    price: "€€",
+    image: "https://images.unsplash.com/photo-1554679665-f5537f187268?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    openNow: true,
+    hours: {
+      monday: "11:00 - 23:00",
+      tuesday: "11:00 - 23:00",
+      wednesday: "11:00 - 23:00",
+      thursday: "11:00 - 23:00",
+      friday: "11:00 - 23:30",
+      saturday: "11:00 - 23:30",
+      sunday: "12:00 - 22:00",
+    },
+    phone: "+33 1 42 08 54 32",
+    website: "https://lemezzo-paris.com",
+    description: "Restaurant libanais authentique proposant des mezzés variés, des grillades et des pâtisseries orientales dans un cadre chaleureux.",
+    photos: [
+      "https://images.unsplash.com/photo-1554679665-f5537f187268?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1539755530862-00f623c00f52?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+    ]
+  },
+  {
+    id: 2,
+    name: "Istanbul Kebab",
+    address: "15 Boulevard de Sébastopol, 75001 Paris",
+    location: { lat: 48.863258, lng: 2.349901 },
+    cuisine: "turc",
+    rating: 4.3,
+    price: "€",
+    image: "https://images.unsplash.com/photo-1561651823-34feb02250e4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    openNow: true,
+    hours: {
+      monday: "11:00 - 23:00",
+      tuesday: "11:00 - 23:00",
+      wednesday: "11:00 - 23:00",
+      thursday: "11:00 - 23:00",
+      friday: "11:00 - 00:00",
+      saturday: "11:00 - 00:00",
+      sunday: "11:00 - 23:00",
+    },
+    phone: "+33 1 40 13 95 21",
+    website: "https://istanbul-kebab.fr",
+    description: "Spécialités turques avec kebabs fraîchement préparés, lahmacun, pides et desserts traditionnels.",
+    photos: [
+      "https://images.unsplash.com/photo-1561651823-34feb02250e4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1548332296-0f5b4b2d114d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1529417305485-480f579e7578?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+    ]
+  },
+  {
+    id: 3,
+    name: "Le Méditerranéen",
+    address: "56 Avenue de la République, 75011 Paris",
+    location: { lat: 48.864815, lng: 2.369982 },
+    cuisine: "méditerranéen",
+    rating: 4.5,
+    price: "€€",
+    image: "https://images.unsplash.com/photo-1510312305653-8ed496efae75?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    openNow: false,
+    hours: {
+      monday: "Fermé",
+      tuesday: "12:00 - 14:30, 19:00 - 22:30",
+      wednesday: "12:00 - 14:30, 19:00 - 22:30",
+      thursday: "12:00 - 14:30, 19:00 - 22:30",
+      friday: "12:00 - 14:30, 19:00 - 23:00",
+      saturday: "12:00 - 15:00, 19:00 - 23:00",
+      sunday: "12:00 - 15:00",
+    },
+    phone: "+33 1 47 00 35 46",
+    website: "https://lemediterraneen-paris.fr",
+    description: "Cuisine méditerranéenne avec des plats variés inspirés du Maroc, de la Tunisie et de l'Algérie. Couscous, tajines et pâtisseries faites maison.",
+    photos: [
+      "https://images.unsplash.com/photo-1510312305653-8ed496efae75?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1540914124281-342587941389?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1567445510548-78a41e95dca9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+    ]
+  },
+  {
+    id: 4,
+    name: "Halal Fried Chicken",
+    address: "78 Rue Saint-Denis, 75001 Paris",
+    location: { lat: 48.863945, lng: 2.347534 },
+    cuisine: "fast-food",
+    rating: 4.0,
+    price: "€",
+    image: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    openNow: true,
+    hours: {
+      monday: "11:00 - 22:00",
+      tuesday: "11:00 - 22:00",
+      wednesday: "11:00 - 22:00",
+      thursday: "11:00 - 22:00",
+      friday: "11:00 - 01:00",
+      saturday: "11:00 - 01:00",
+      sunday: "12:00 - 22:00",
+    },
+    phone: "+33 1 40 39 37 21",
+    website: "https://hfc-paris.fr",
+    description: "Fast-food halal spécialisé dans le poulet frit et les burgers, avec des sauces maison et desserts américains.",
+    photos: [
+      "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1606755962773-d324e0a13086?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+    ]
+  },
+  {
+    id: 5,
+    name: "Taj Mahal Palace",
+    address: "8 Rue de la Roquette, 75011 Paris",
+    location: { lat: 48.853169, lng: 2.371377 },
+    cuisine: "indien",
+    rating: 4.6,
+    price: "€€",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    openNow: true,
+    hours: {
+      monday: "12:00 - 14:30, 19:00 - 23:00",
+      tuesday: "12:00 - 14:30, 19:00 - 23:00",
+      wednesday: "12:00 - 14:30, 19:00 - 23:00",
+      thursday: "12:00 - 14:30, 19:00 - 23:00",
+      friday: "12:00 - 14:30, 19:00 - 23:30",
+      saturday: "12:00 - 15:00, 19:00 - 23:30",
+      sunday: "12:00 - 15:00, 19:00 - 23:00",
+    },
+    phone: "+33 1 47 00 94 25",
+    website: "https://tajmahalpalace-paris.com",
+    description: "Restaurant indien proposant des plats authentiques du nord de l'Inde, avec tandoor, currys et spécialités végétariennes.",
+    photos: [
+      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1546833998-877b37c2e4c6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+    ]
+  },
+  {
+    id: 6,
+    name: "Le Souk",
+    address: "32 Rue des Abbesses, 75018 Paris",
+    location: { lat: 48.884588, lng: 2.337888 },
+    cuisine: "marocain",
+    rating: 4.4,
+    price: "€€",
+    image: "https://images.unsplash.com/photo-1541388400-b90f38dd6c8e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    openNow: false,
+    hours: {
+      monday: "Fermé",
+      tuesday: "19:00 - 23:00",
+      wednesday: "19:00 - 23:00",
+      thursday: "19:00 - 23:00",
+      friday: "12:00 - 14:30, 19:00 - 23:30",
+      saturday: "12:00 - 14:30, 19:00 - 23:30",
+      sunday: "12:00 - 15:00, 19:00 - 22:30",
+    },
+    phone: "+33 1 42 23 59 97",
+    website: "https://lesouk-paris.fr",
+    description: "Restaurant marocain proposant des couscous, tajines et pâtisseries orientales dans un cadre élégant avec décorations traditionnelles.",
+    photos: [
+      "https://images.unsplash.com/photo-1541388400-b90f38dd6c8e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1530637597853-37f4e1b6fa6a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1544939514-aa98d908b390?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+    ]
+  },
+  {
+    id: 7,
+    name: "Al Andalus",
+    address: "12 Rue Damrémont, 75018 Paris",
+    location: { lat: 48.890715, lng: 2.337077 },
+    cuisine: "syrien",
+    rating: 4.8,
+    price: "€€",
+    image: "https://images.unsplash.com/photo-1554679665-f5537f187268?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    openNow: true,
+    hours: {
+      monday: "12:00 - 15:00, 18:30 - 22:30",
+      tuesday: "12:00 - 15:00, 18:30 - 22:30",
+      wednesday: "12:00 - 15:00, 18:30 - 22:30",
+      thursday: "12:00 - 15:00, 18:30 - 22:30",
+      friday: "12:00 - 15:00, 18:30 - 23:00",
+      saturday: "12:00 - 15:30, 18:30 - 23:00",
+      sunday: "12:00 - 15:30, 18:30 - 22:00",
+    },
+    phone: "+33 1 46 06 88 78",
+    website: "https://alandalus-paris.com",
+    description: "Cuisine syrienne authentique proposant des spécialités comme le kebab d'Alep, le foul et les pâtisseries au miel.",
+    photos: [
+      "https://images.unsplash.com/photo-1554679665-f5537f187268?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1574116504146-a7cd4a701ed7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1535400035024-307bdf4e1e84?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+    ]
+  },
+  {
+    id: 8,
+    name: "Bismillah Burger",
+    address: "45 Boulevard de Belleville, 75011 Paris",
+    location: { lat: 48.871582, lng: 2.377941 },
+    cuisine: "fast-food",
+    rating: 4.2,
+    price: "€",
+    image: "https://images.unsplash.com/photo-1561758033-d89a9ad46330?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    openNow: true,
+    hours: {
+      monday: "11:00 - 00:00",
+      tuesday: "11:00 - 00:00",
+      wednesday: "11:00 - 00:00",
+      thursday: "11:00 - 00:00",
+      friday: "11:00 - 02:00",
+      saturday: "11:00 - 02:00",
+      sunday: "11:00 - 00:00",
+    },
+    phone: "+33 1 43 55 61 32",
+    website: "https://bismillahburger.fr",
+    description: "Fast-food halal proposant des burgers gourmet, des wraps et des milkshakes dans un cadre contemporain.",
+    photos: [
+      "https://images.unsplash.com/photo-1561758033-d89a9ad46330?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1550547660-d9450f859349?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1457460866886-40ef8d4b42a0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+    ]
+  },
+  {
+    id: 9,
+    name: "Délices d'Istanbul",
+    address: "18 Rue des Martyrs, 75009 Paris",
+    location: { lat: 48.878824, lng: 2.339749 },
+    cuisine: "turc",
+    rating: 4.5,
+    price: "€€",
+    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    openNow: true,
+    hours: {
+      monday: "11:30 - 23:00",
+      tuesday: "11:30 - 23:00",
+      wednesday: "11:30 - 23:00",
+      thursday: "11:30 - 23:00",
+      friday: "11:30 - 23:30",
+      saturday: "11:30 - 23:30",
+      sunday: "11:30 - 22:30",
+    },
+    phone: "+33 1 48 78 65 07",
+    website: "https://delicesistanbul.fr",
+    description: "Restaurant turc proposant des grillades, mezzés, pides et desserts traditionnels dans un cadre chaleureux et authentique.",
+    photos: [
+      "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1578474846511-04ba529f0b88?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+    ]
+  },
+  {
+    id: 10,
+    name: "Chez Aziz",
+    address: "62 Rue Oberkampf, 75011 Paris",
+    location: { lat: 48.865001, lng: 2.377103 },
+    cuisine: "méditerranéen",
+    rating: 4.3,
+    price: "€€",
+    image: "https://images.unsplash.com/photo-1567337710282-00832b415979?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    openNow: true,
+    hours: {
+      monday: "12:00 - 15:00, 19:00 - 23:00",
+      tuesday: "12:00 - 15:00, 19:00 - 23:00",
+      wednesday: "12:00 - 15:00, 19:00 - 23:00",
+      thursday: "12:00 - 15:00, 19:00 - 23:00",
+      friday: "12:00 - 15:00, 19:00 - 00:00",
+      saturday: "12:00 - 15:30, 19:00 - 00:00",
+      sunday: "12:00 - 15:30, 19:00 - 22:30",
+    },
+    phone: "+33 1 43 57 90 36",
+    website: "https://chezaziz-paris.fr",
+    description: "Restaurant méditerranéen proposant des plats tunisiens, avec couscous, grillades et pâtisseries orientales. Ambiance familiale.",
+    photos: [
+      "https://images.unsplash.com/photo-1567337710282-00832b415979?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1560611588-163f295eb145?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+      "https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+    ]
+  }
+];
+
+// Types de cuisine disponibles pour les filtres
+export const cuisineTypes = [
+  { id: 'all', name: 'Tous' },
+  { id: 'libanais', name: 'Libanais' },
+  { id: 'turc', name: 'Turc' },
+  { id: 'marocain', name: 'Marocain' },
+  { id: 'syrien', name: 'Syrien' },
+  { id: 'indien', name: 'Indien' },
+  { id: 'méditerranéen', name: 'Méditerranéen' },
+  { id: 'fast-food', name: 'Fast-Food' },
+];
