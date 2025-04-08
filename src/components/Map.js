@@ -1,10 +1,37 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import styled from 'styled-components';
 
 const MapContainer = styled.div`
   flex: 1;
   height: 100%;
+  position: relative;
+`;
+
+const MapErrorContainer = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+  max-width: 300px;
+  z-index: 10;
+`;
+
+const MapLoadingContainer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 5;
 `;
 
 const containerStyle = {
@@ -46,17 +73,19 @@ const InfoWindowButton = styled.button`
   }
 `;
 
-// Vous devrez remplacer cette clé par votre clé API Google Maps valide
+// Remplacez cette clé par votre clé API Google Maps valide
 const googleMapsApiKey = "VOTRE_CLE_API_ICI";
 
 function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, userLocation }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: googleMapsApiKey,
+    libraries: ['places']
   });
 
   const [map, setMap] = useState(null);
   const [infoWindowRestaurant, setInfoWindowRestaurant] = useState(null);
+  const [mapLoading, setMapLoading] = useState(true);
 
   // Styles personnalisés pour la carte
   const mapOptions = {
@@ -70,6 +99,21 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
         elementType: 'labels',
         stylers: [{ visibility: 'off' }],
       },
+      {
+        featureType: 'poi.school',
+        elementType: 'labels',
+        stylers: [{ visibility: 'off' }],
+      },
+      {
+        featureType: 'poi.medical',
+        elementType: 'labels',
+        stylers: [{ visibility: 'off' }],
+      },
+      {
+        featureType: 'transit',
+        elementType: 'labels',
+        stylers: [{ visibility: 'simplified' }],
+      },
     ],
   };
 
@@ -80,6 +124,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   const onLoad = useCallback((map) => {
     mapRef.current = map;
     setMap(map);
+    setMapLoading(false);
   }, []);
 
   // Lorsque la carte est déchargée
@@ -104,7 +149,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   };
 
   // Centrer la carte sur le restaurant sélectionné
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedRestaurant && mapRef.current) {
       mapRef.current.panTo({
         lat: selectedRestaurant.location.lat,
@@ -114,12 +159,53 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
     }
   }, [selectedRestaurant]);
 
+  // Ajuster les limites de la carte pour montrer tous les restaurants
+  useEffect(() => {
+    if (map && restaurants.length > 0 && !selectedRestaurant) {
+      const bounds = new window.google.maps.LatLngBounds();
+      
+      restaurants.forEach(restaurant => {
+        bounds.extend(new window.google.maps.LatLng(
+          restaurant.location.lat,
+          restaurant.location.lng
+        ));
+      });
+      
+      // Si l'utilisateur a partagé sa position, l'inclure dans les limites
+      if (userLocation) {
+        bounds.extend(new window.google.maps.LatLng(
+          userLocation.lat,
+          userLocation.lng
+        ));
+      }
+      
+      map.fitBounds(bounds);
+      
+      // Si les limites sont trop petites (un seul point), zoomer
+      const zoom = map.getZoom();
+      if (zoom > 15) {
+        map.setZoom(15);
+      }
+    }
+  }, [map, restaurants, userLocation, selectedRestaurant]);
+
   if (loadError) {
-    return <div>Erreur de chargement de la carte</div>;
+    return (
+      <MapContainer>
+        <MapErrorContainer>
+          <h3>Erreur de chargement de la carte</h3>
+          <p>Impossible de charger Google Maps. Veuillez vérifier votre connexion ou réessayer plus tard.</p>
+        </MapErrorContainer>
+      </MapContainer>
+    );
   }
 
   if (!isLoaded) {
-    return <div>Chargement de la carte...</div>;
+    return (
+      <MapContainer>
+        <MapLoadingContainer>Chargement de la carte...</MapLoadingContainer>
+      </MapContainer>
+    );
   }
 
   return (
@@ -132,6 +218,10 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
         onUnmount={onUnmount}
         options={mapOptions}
       >
+        {mapLoading && (
+          <MapLoadingContainer>Chargement de la carte...</MapLoadingContainer>
+        )}
+        
         {/* Marqueur pour la position de l'utilisateur */}
         {userLocation && (
           <Marker
@@ -175,7 +265,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
                 <p>Cuisine: {infoWindowRestaurant.cuisine}</p>
                 <p>Note: {infoWindowRestaurant.rating.toFixed(1)} ★</p>
                 <p>
-                  {infoWindowRestaurant.openNow ? '🟢 Ouvert' : '🔴 Fermé'}
+                  {infoWindowRestaurant.openNow ? '🟢 Ouvert' : infoWindowRestaurant.openNow === false ? '🔴 Fermé' : '⚪ Statut inconnu'}
                 </p>
               </InfoWindowDetails>
               <InfoWindowButton
