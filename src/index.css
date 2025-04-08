@@ -1,39 +1,58 @@
+:root {
+  --primary-color: #25a45c;
+  --secondary-color: #1e8a4a;
+  --accent-color: #ff6b6b;
+  --background-white: #fff;
+  --background-light: #f5f5f5;
+  --text-color: #333;
+  --text-light: #777;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --border-radius: 8px;
+  --transition: all 0.2s ease;
+}
+
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
-  color: #333;
-}
-
-a {
-  text-decoration: none;
-  color: inherit;
+  color: var(--text-color);
 }
 
 button {
-  cursor: pointer;
   border: none;
-  outline: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-/* Variables CSS */
-:root {
-  --primary-color: #4CAF50;
-  --secondary-color: #388E3C;
-  --accent-color: #8BC34A;
-  --text-color: #333;
-  --text-light: #757575;
-  --background-light: #f5f5f5;
-  --background-white: #ffffff;
-  --error-color: #F44336;
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --border-radius: 8px;
-  --transition: all 0.3s ease;
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+/* Styles pour le loader */
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #FFF;
+  border-bottom-color: var(--primary-color);
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
