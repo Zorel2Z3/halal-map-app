@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { cuisineTypes } from '../data/restaurants';
 
@@ -157,7 +157,44 @@ const OpenBadge = styled.span`
   margin-left: 0.5rem;
 `;
 
-function Sidebar({ restaurants, setSelectedRestaurant, filters, setFilters }) {
+const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: var(--text-light);
+  text-align: center;
+  height: 200px;
+`;
+
+const ErrorContainer = styled.div`
+  padding: 1rem;
+  margin: 1rem;
+  background-color: #ffeeee;
+  color: #cc0000;
+  border-radius: var(--border-radius);
+  text-align: center;
+`;
+
+const SearchResultInfo = styled.div`
+  padding: 0.5rem 1rem;
+  background-color: #f5f5f5;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  border-bottom: 1px solid #eee;
+`;
+
+function Sidebar({ 
+  restaurants, 
+  setSelectedRestaurant, 
+  filters, 
+  setFilters, 
+  loading, 
+  error, 
+  activeTab,
+  searchQuery 
+}) {
   // Fonction pour gérer le changement de filtre de cuisine
   const handleCuisineChange = (cuisineId) => {
     setFilters({
@@ -180,6 +217,19 @@ function Sidebar({ restaurants, setSelectedRestaurant, filters, setFilters }) {
       ...filters,
       openNow: e.target.checked,
     });
+  };
+
+  // Formatage du message pour l'affichage des résultats
+  const getResultsMessage = () => {
+    if (searchQuery) {
+      return `Résultats pour "${searchQuery}" (${restaurants.length})`;
+    }
+    
+    if (activeTab === 'trending') {
+      return `Restaurants tendance (${restaurants.length})`;
+    }
+    
+    return `${restaurants.length} restaurant(s) trouvé(s)`;
   };
 
   return (
@@ -224,8 +274,22 @@ function Sidebar({ restaurants, setSelectedRestaurant, filters, setFilters }) {
         </CheckboxFilter>
       </FiltersSection>
 
+      {restaurants.length > 0 && !loading && !error && (
+        <SearchResultInfo>
+          {getResultsMessage()}
+        </SearchResultInfo>
+      )}
+
       <RestaurantsList>
-        {restaurants.length === 0 ? (
+        {loading ? (
+          <LoadingContainer>
+            <div>Chargement des restaurants...</div>
+          </LoadingContainer>
+        ) : error ? (
+          <ErrorContainer>
+            <p>{error}</p>
+          </ErrorContainer>
+        ) : restaurants.length === 0 ? (
           <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-light)' }}>
             Aucun restaurant ne correspond à vos critères.
           </div>
@@ -251,7 +315,7 @@ function Sidebar({ restaurants, setSelectedRestaurant, filters, setFilters }) {
                 <div>
                   {restaurant.price}
                   <OpenBadge isOpen={restaurant.openNow}>
-                    {restaurant.openNow ? 'Ouvert' : 'Fermé'}
+                    {restaurant.openNow ? 'Ouvert' : restaurant.openNow === false ? 'Fermé' : 'Inconnu'}
                   </OpenBadge>
                 </div>
               </RestaurantDetails>
