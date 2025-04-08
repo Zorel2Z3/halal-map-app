@@ -44,10 +44,15 @@ const SearchBar = styled.div`
   position: relative;
   margin: 0 1rem;
 
+  form {
+    width: 100%;
+    display: flex;
+  }
+
   input {
     flex: 1;
     padding: 0.75rem 1rem;
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
     border: none;
     font-size: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -55,15 +60,18 @@ const SearchBar = styled.div`
   }
 
   button {
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
+    padding: 0.75rem 1rem;
+    background-color: var(--accent-color);
     border: none;
-    color: var(--text-light);
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    color: white;
     cursor: pointer;
     font-size: 1.25rem;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--secondary-color);
+    }
   }
 `;
 
@@ -98,13 +106,14 @@ const Button = styled.button`
   }
 `;
 
-function Header({ getUserLocation, setCenter }) {
+function Header({ getUserLocation, setCenter, onSearch }) {
   const [searchValue, setSearchValue] = useState('');
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Ici on pourrait implémenter une recherche de lieu avec l'API Google Maps
-    console.log('Recherche:', searchValue);
+    if (searchValue.trim()) {
+      onSearch(searchValue);
+    }
   };
 
   return (
@@ -118,7 +127,7 @@ function Header({ getUserLocation, setCenter }) {
         <form onSubmit={handleSearch}>
           <input
             type="text"
-            placeholder="Rechercher un lieu..."
+            placeholder="Rechercher un restaurant halal..."
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
           />
