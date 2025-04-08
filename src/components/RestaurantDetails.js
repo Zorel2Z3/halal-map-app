@@ -180,13 +180,72 @@ const ActionButton = styled.a`
   }
 `;
 
+const ReviewsSection = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const Review = styled.div`
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+`;
+
+const ReviewHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+`;
+
+const ReviewAuthor = styled.div`
+  font-weight: 500;
+`;
+
+const ReviewRating = styled.div`
+  color: #FFD700;
+`;
+
+const ReviewDate = styled.div`
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+`;
+
+const ReviewText = styled.p`
+  line-height: 1.5;
+  margin: 0;
+`;
+
+const LoadingContainer = styled.div`
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-light);
+`;
+
 // Fonction pour déterminer si le restaurant est ouvert (à implémenter en réel)
 const isRestaurantOpen = (restaurant) => {
   return restaurant.openNow;
 };
 
+// Formater une date en format lisible
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+};
+
 function RestaurantDetails({ restaurant, onClose }) {
   const [expanded, setExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState('infos'); // 'infos', 'reviews', 'photos'
 
   if (!restaurant) return null;
 
@@ -194,9 +253,17 @@ function RestaurantDetails({ restaurant, onClose }) {
   
   // Prépare l'URL pour Google Maps
   const getDirectionsUrl = () => {
-    const destination = encodeURIComponent(restaurant.address);
+    const destination = encodeURIComponent(restaurant.address || `${restaurant.location.lat},${restaurant.location.lng}`);
     return `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
   };
+  
+  // Afficher un message si certaines informations ne sont pas disponibles
+  const displayIfAvailable = (info, defaultText = 'Non disponible') => {
+    return info || defaultText;
+  };
+
+  // Vérifier si le restaurant a des heures d'ouverture
+  const hasHours = restaurant.hours && Object.keys(restaurant.hours).length > 0;
 
   return (
     <DetailsContainer expanded={expanded}>
@@ -215,59 +282,95 @@ function RestaurantDetails({ restaurant, onClose }) {
           <Badge>★ {restaurant.rating.toFixed(1)}</Badge>
           <Badge>{restaurant.price}</Badge>
           <Badge className="open" isOpen={isOpen}>
-            {isOpen ? '🟢 Ouvert' : '🔴 Fermé'}
+            {isOpen ? '🟢 Ouvert' : isOpen === false ? '🔴 Fermé' : '⚪ Inconnu'}
           </Badge>
         </RestaurantMeta>
         
-        <Description>{restaurant.description}</Description>
+        {restaurant.description && (
+          <Description>{restaurant.description}</Description>
+        )}
         
-        <SectionTitle>Photos</SectionTitle>
-        <PhotosGrid>
-          {restaurant.photos.map((photo, index) => (
-            <Photo key={index}>
-              <img src={photo} alt={`${restaurant.name} - ${index + 1}`} />
-            </Photo>
-          ))}
-        </PhotosGrid>
+        {restaurant.photos && restaurant.photos.length > 0 && (
+          <>
+            <SectionTitle>Photos</SectionTitle>
+            <PhotosGrid>
+              {restaurant.photos.map((photo, index) => (
+                <Photo key={index}>
+                  <img src={photo} alt={`${restaurant.name} - ${index + 1}`} />
+                </Photo>
+              ))}
+            </PhotosGrid>
+          </>
+        )}
         
         <SectionTitle>Informations</SectionTitle>
         <InfoTable>
           <tbody>
             <tr>
               <td>Adresse</td>
-              <td>{restaurant.address}</td>
+              <td>{displayIfAvailable(restaurant.address)}</td>
             </tr>
             <tr>
               <td>Téléphone</td>
-              <td>{restaurant.phone}</td>
+              <td>{displayIfAvailable(restaurant.phone)}</td>
             </tr>
-            <tr>
-              <td>Site web</td>
-              <td>
-                <a href={restaurant.website} target="_blank" rel="noopener noreferrer">
-                  {restaurant.website}
-                </a>
-              </td>
-            </tr>
-            <tr>
-              <td>Horaires</td>
-              <td>
-                <div>Lundi: {restaurant.hours.monday}</div>
-                <div>Mardi: {restaurant.hours.tuesday}</div>
-                <div>Mercredi: {restaurant.hours.wednesday}</div>
-                <div>Jeudi: {restaurant.hours.thursday}</div>
-                <div>Vendredi: {restaurant.hours.friday}</div>
-                <div>Samedi: {restaurant.hours.saturday}</div>
-                <div>Dimanche: {restaurant.hours.sunday}</div>
-              </td>
-            </tr>
+            {restaurant.website && (
+              <tr>
+                <td>Site web</td>
+                <td>
+                  <a href={restaurant.website} target="_blank" rel="noopener noreferrer">
+                    {restaurant.website}
+                  </a>
+                </td>
+              </tr>
+            )}
+            {hasHours && (
+              <tr>
+                <td>Horaires</td>
+                <td>
+                  <div>Lundi: {displayIfAvailable(restaurant.hours.monday)}</div>
+                  <div>Mardi: {displayIfAvailable(restaurant.hours.tuesday)}</div>
+                  <div>Mercredi: {displayIfAvailable(restaurant.hours.wednesday)}</div>
+                  <div>Jeudi: {displayIfAvailable(restaurant.hours.thursday)}</div>
+                  <div>Vendredi: {displayIfAvailable(restaurant.hours.friday)}</div>
+                  <div>Samedi: {displayIfAvailable(restaurant.hours.saturday)}</div>
+                  <div>Dimanche: {displayIfAvailable(restaurant.hours.sunday)}</div>
+                </td>
+              </tr>
+            )}
+            {restaurant.userRatingsTotal && (
+              <tr>
+                <td>Avis</td>
+                <td>{restaurant.userRatingsTotal} avis</td>
+              </tr>
+            )}
           </tbody>
         </InfoTable>
         
+        {restaurant.reviews && restaurant.reviews.length > 0 && (
+          <>
+            <SectionTitle>Avis des clients</SectionTitle>
+            <ReviewsSection>
+              {restaurant.reviews.slice(0, 3).map((review, index) => (
+                <Review key={index}>
+                  <ReviewHeader>
+                    <ReviewAuthor>{review.author_name}</ReviewAuthor>
+                    <ReviewRating>{'★'.repeat(Math.round(review.rating))}</ReviewRating>
+                  </ReviewHeader>
+                  <ReviewDate>{formatDate(review.time * 1000)}</ReviewDate>
+                  <ReviewText>{review.text}</ReviewText>
+                </Review>
+              ))}
+            </ReviewsSection>
+          </>
+        )}
+        
         <ButtonGroup>
-          <ActionButton href={`tel:${restaurant.phone}`} className="secondary">
-            📞 Appeler
-          </ActionButton>
+          {restaurant.phone && (
+            <ActionButton href={`tel:${restaurant.phone}`} className="secondary">
+              📞 Appeler
+            </ActionButton>
+          )}
           <ActionButton href={getDirectionsUrl()} target="_blank" rel="noopener noreferrer">
             🗺️ Itinéraire
           </ActionButton>
