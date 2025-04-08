@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="192px" height="192px" viewBox="0 0 192 192" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>Halal Map Logo</title>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle fill="#4CAF50" cx="96" cy="96" r="96"></circle>
+        <circle fill="#FFFFFF" cx="96" cy="96" r="80"></circle>
+        <circle fill="#4CAF50" cx="96" cy="96" r="70"></circle>
+        <path d="M96,40 C74.013,40 56,57.787 56,80 C56,94.004 63.728,106.603 75,113.668 L96,160 L117,113.668 C128.272,106.603 136,94.004 136,80 C136,57.787 117.987,40 96,40 Z" fill="#FFFFFF"></path>
+        <circle fill="#FFFFFF" cx="96" cy="80" r="16"></circle>
+        <path d="M75,135 L85,135 L85,145 L75,145 Z M90,135 L100,135 L100,145 L90,145 Z M105,135 L115,135 L115,145 L105,145 Z" fill="#FFFFFF"></path>
+    </g>
+</svg>
