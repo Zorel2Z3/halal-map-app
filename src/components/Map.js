@@ -122,6 +122,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
 
   // Lorsque la carte est chargée
   const onLoad = useCallback((map) => {
+    console.log("Google Map chargée avec succès");
     mapRef.current = map;
     setMap(map);
     setMapLoading(false);
@@ -162,39 +163,47 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   // Ajuster les limites de la carte pour montrer tous les restaurants
   useEffect(() => {
     if (map && restaurants.length > 0 && !selectedRestaurant) {
-      const bounds = new window.google.maps.LatLngBounds();
-      
-      restaurants.forEach(restaurant => {
-        bounds.extend(new window.google.maps.LatLng(
-          restaurant.location.lat,
-          restaurant.location.lng
-        ));
-      });
-      
-      // Si l'utilisateur a partagé sa position, l'inclure dans les limites
-      if (userLocation) {
-        bounds.extend(new window.google.maps.LatLng(
-          userLocation.lat,
-          userLocation.lng
-        ));
-      }
-      
-      map.fitBounds(bounds);
-      
-      // Si les limites sont trop petites (un seul point), zoomer
-      const zoom = map.getZoom();
-      if (zoom > 15) {
-        map.setZoom(15);
+      try {
+        const bounds = new window.google.maps.LatLngBounds();
+        
+        restaurants.forEach(restaurant => {
+          if (restaurant.location && restaurant.location.lat && restaurant.location.lng) {
+            bounds.extend(new window.google.maps.LatLng(
+              restaurant.location.lat,
+              restaurant.location.lng
+            ));
+          }
+        });
+        
+        // Si l'utilisateur a partagé sa position, l'inclure dans les limites
+        if (userLocation) {
+          bounds.extend(new window.google.maps.LatLng(
+            userLocation.lat,
+            userLocation.lng
+          ));
+        }
+        
+        map.fitBounds(bounds);
+        
+        // Si les limites sont trop petites (un seul point), zoomer
+        const zoom = map.getZoom();
+        if (zoom > 15) {
+          map.setZoom(15);
+        }
+      } catch (error) {
+        console.error("Erreur lors de l'ajustement des limites de la carte:", error);
       }
     }
   }, [map, restaurants, userLocation, selectedRestaurant]);
 
   if (loadError) {
+    console.error("Erreur de chargement de Google Maps:", loadError);
     return (
       <MapContainer>
         <MapErrorContainer>
           <h3>Erreur de chargement de la carte</h3>
-          <p>Impossible de charger Google Maps. Veuillez vérifier votre connexion ou réessayer plus tard.</p>
+          <p>Impossible de charger Google Maps. Veuillez vérifier votre connexion, votre clé API ou réessayer plus tard.</p>
+          <p>Détail de l'erreur: {loadError.message}</p>
         </MapErrorContainer>
       </MapContainer>
     );
@@ -203,7 +212,10 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   if (!isLoaded) {
     return (
       <MapContainer>
-        <MapLoadingContainer>Chargement de la carte...</MapLoadingContainer>
+        <MapLoadingContainer>
+          <div className="loader"></div>
+          <p style={{ marginTop: '1rem' }}>Chargement de la carte...</p>
+        </MapLoadingContainer>
       </MapContainer>
     );
   }
@@ -219,7 +231,10 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
         options={mapOptions}
       >
         {mapLoading && (
-          <MapLoadingContainer>Chargement de la carte...</MapLoadingContainer>
+          <MapLoadingContainer>
+            <div className="loader"></div>
+            <p style={{ marginTop: '1rem' }}>Chargement de la carte...</p>
+          </MapLoadingContainer>
         )}
         
         {/* Marqueur pour la position de l'utilisateur */}
@@ -264,6 +279,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
               <InfoWindowDetails>
                 <p>Cuisine: {infoWindowRestaurant.cuisine}</p>
                 <p>Note: {infoWindowRestaurant.rating.toFixed(1)} ★</p>
+                <p>Pays: {infoWindowRestaurant.country || 'Non spécifié'}</p>
                 <p>
                   {infoWindowRestaurant.openNow ? '🟢 Ouvert' : infoWindowRestaurant.openNow === false ? '🔴 Fermé' : '⚪ Statut inconnu'}
                 </p>
