@@ -21,6 +21,19 @@ const MapErrorContainer = styled.div`
   z-index: 10;
 `;
 
+const MapPlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  background-color: #f3f3f3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+`;
+
 const MapLoadingContainer = styled.div`
   position: absolute;
   top: 0;
@@ -90,18 +103,44 @@ const InfoWindowButton = styled.button`
   }
 `;
 
+// Simulation des marqueurs si la carte ne charge pas
+const RestaurantMarker = styled.div`
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+`;
+
+const UserMarker = styled.div`
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background-color: blue;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  border: 2px solid white;
+`;
+
 function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, userLocation }) {
   // Récupérer la clé API Google Maps depuis les variables d'environnement
   const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
   
+  // Vérifier si une clé API valide est disponible
+  const hasValidApiKey = googleMapsApiKey && googleMapsApiKey !== 'VOTRE_CLE_API_ICI';
+  
   // Ajouter des logs pour déboguer
-  console.log("Initialisation de la carte avec la clé API:", googleMapsApiKey ? "Clé API définie" : "Clé API manquante");
+  console.log("Initialisation de la carte avec la clé API:", hasValidApiKey ? "Clé API définie" : "Clé API manquante");
   console.log("Centre de la carte:", center);
   console.log("Nombre de restaurants à afficher:", restaurants ? restaurants.length : 0);
 
+  // Ne charger Google Maps que si une clé API valide est disponible
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: googleMapsApiKey,
+    googleMapsApiKey: hasValidApiKey ? googleMapsApiKey : '',
     libraries: ['places']
   });
 
@@ -238,6 +277,21 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
     }
   }, [map, restaurants, userLocation, selectedRestaurant]);
 
+  // Si la clé API n'est pas définie, afficher un message d'erreur spécifique
+  if (!hasValidApiKey) {
+    return (
+      <MapContainer>
+        <MapErrorContainer>
+          <h3>Clé API Google Maps non configurée</h3>
+          <p>Pour afficher la carte, vous devez fournir une clé API Google Maps valide dans le fichier .env :</p>
+          <p>REACT_APP_GOOGLE_MAPS_API_KEY=votre_clé_api_ici</p>
+          <p>Vous pouvez obtenir une clé API sur la console Google Cloud Platform.</p>
+        </MapErrorContainer>
+      </MapContainer>
+    );
+  }
+
+  // Si une erreur de chargement s'est produite
   if (loadError) {
     console.error("Erreur de chargement de Google Maps:", loadError);
     return (
@@ -265,6 +319,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
     );
   }
 
+  // Si Google Maps est en cours de chargement
   if (!isLoaded) {
     return (
       <MapContainer>
