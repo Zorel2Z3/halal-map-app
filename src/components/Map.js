@@ -73,8 +73,8 @@ const InfoWindowButton = styled.button`
   }
 `;
 
-// Remplacez cette clé par votre clé API Google Maps valide
-const googleMapsApiKey = "VOTRE_CLE_API_ICI";
+// Récupérer la clé API Google Maps depuis les variables d'environnement
+const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
 function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, userLocation }) {
   const { isLoaded, loadError } = useJsApiLoader({
