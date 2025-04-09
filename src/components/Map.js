@@ -191,20 +191,17 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   console.log("Centre de la carte:", center);
   console.log("Nombre de restaurants à afficher:", restaurants ? restaurants.length : 0);
 
-  // Ne charger Google Maps que si une clé API valide est disponible
-  const { isLoaded, loadError } = useJsApiLoader({
+  // Si nous sommes en mode simulation, nous n'essayons pas de charger Google Maps
+  const { isLoaded, loadError } = !useSimulationMode ? useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: hasValidApiKey ? googleMapsApiKey : '',
-    libraries: ['places'],
-    // Skip loading if we're in simulation mode
-    skipLoadingCallback: useSimulationMode
-  });
+    googleMapsApiKey: googleMapsApiKey,
+    libraries: ['places']
+  }) : { isLoaded: false, loadError: null };
 
   const [map, setMap] = useState(null);
   const [infoWindowRestaurant, setInfoWindowRestaurant] = useState(null);
-  const [mapLoading, setMapLoading] = useState(true);
-  const [simulatedCenter, setSimulatedCenter] = useState({ x: 50, y: 50 }); // Centre simulé en %
-
+  const [mapLoading, setMapLoading] = useState(!useSimulationMode);
+  
   // Styles personnalisés pour la carte
   const mapOptions = {
     disableDefaultUI: false,
