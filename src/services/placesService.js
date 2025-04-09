@@ -1,7 +1,8 @@
 // Service pour les appels à l'API Google Maps Places
 
-// Votre clé API Google
-const API_KEY = 'VOTRE_CLE_API_ICI'; // Remplacez par votre clé API Google
+// Récupérer les clés d'API depuis les variables d'environnement
+const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+const CORS_PROXY = process.env.REACT_APP_CORS_PROXY || 'https://cors-anywhere.herokuapp.com/';
 
 /**
  * Recherche des restaurants halal à proximité d'une position
@@ -14,7 +15,7 @@ export const searchHalalRestaurants = async (location, radius = 5000) => {
     console.log(`Recherche de restaurants halal à ${location.lat},${location.lng} dans un rayon de ${radius}m`);
     
     // Utiliser l'API de recherche à proximité de Google Places
-    const url = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.lat},${location.lng}&radius=${radius}&type=restaurant&keyword=halal&key=${API_KEY}`;
+    const url = `${CORS_PROXY}https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.lat},${location.lng}&radius=${radius}&type=restaurant&keyword=halal&key=${API_KEY}`;
     
     const response = await fetch(url);
     
@@ -110,7 +111,7 @@ export const getRestaurantDetails = async (placeId) => {
   try {
     console.log(`Récupération des détails pour le lieu ID: ${placeId}`);
     
-    const url = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,formatted_address,geometry,rating,formatted_phone_number,website,opening_hours,reviews,photos,price_level,types,user_ratings_total,address_components&key=${API_KEY}`;
+    const url = `${CORS_PROXY}https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,formatted_address,geometry,rating,formatted_phone_number,website,opening_hours,reviews,photos,price_level,types,user_ratings_total,address_components&key=${API_KEY}`;
     
     const response = await fetch(url);
     
@@ -191,7 +192,7 @@ export const getRestaurantDetails = async (placeId) => {
  */
 export const getPlaceDetails = async (placeId) => {
   try {
-    const url = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=address_components&key=${API_KEY}`;
+    const url = `${CORS_PROXY}https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=address_components&key=${API_KEY}`;
     
     const response = await fetch(url);
     
@@ -240,7 +241,7 @@ export const getTrendingRestaurants = async (location, country = null) => {
     console.log(`Récupération des restaurants tendance près de ${location.lat},${location.lng}`);
     
     // Ici, on peut utiliser rankby=prominence pour obtenir les plus populaires
-    const url = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.lat},${location.lng}&rankby=prominence&type=restaurant&keyword=halal&key=${API_KEY}`;
+    const url = `${CORS_PROXY}https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.lat},${location.lng}&rankby=prominence&type=restaurant&keyword=halal&key=${API_KEY}`;
     
     const response = await fetch(url);
     
@@ -326,7 +327,7 @@ export const searchRestaurantsByText = async (query, location, country = null) =
   try {
     console.log(`Recherche textuelle pour "${query}" près de ${location.lat},${location.lng}`);
     
-    const url = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query + ' halal restaurant')}&location=${location.lat},${location.lng}&radius=10000&key=${API_KEY}`;
+    const url = `${CORS_PROXY}https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query + ' halal restaurant')}&location=${location.lat},${location.lng}&radius=10000&key=${API_KEY}`;
     
     const response = await fetch(url);
     
