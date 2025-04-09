@@ -5,7 +5,14 @@ import Map from './components/Map';
 import Sidebar from './components/Sidebar';
 import RestaurantDetails from './components/RestaurantDetails';
 import Tabs from './components/Tabs';
-import { searchHalalRestaurants, getTrendingRestaurants, getRestaurantDetails, searchRestaurantsByText } from './services/placesService';
+import { 
+  searchHalalRestaurants, 
+  getTrendingRestaurants, 
+  getRestaurantDetails, 
+  searchRestaurantsByText, 
+  searchRestaurantsByCountry,
+  getAvailableCountries
+} from './services/placesService';
 
 const AppContainer = styled.div`
   display: flex;
@@ -35,14 +42,17 @@ function App() {
     cuisine: 'all',
     rating: 0,
     openNow: false,
+    country: null
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('restaurants');
   const [searchQuery, setSearchQuery] = useState('');
+  const [availableCountries, setAvailableCountries] = useState([]);
 
   // Obtenir la localisation de l'utilisateur
   const getUserLocation = () => {
+    setLoading(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -50,6 +60,7 @@ function App() {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
+          console.log("Position utilisateur récupérée:", location);
           setUserLocation(location);
           setCenter(location);
           
@@ -60,10 +71,16 @@ function App() {
           console.error('Erreur de géolocalisation :', error);
           // Charger quand même les restaurants sur Paris par défaut
           loadRestaurants(center);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
         }
       );
     } else {
       console.error('La géolocalisation n\'est pas supportée par ce navigateur.');
+      setError('La géolocalisation n\'est pas supportée par ce navigateur.');
       // Charger quand même les restaurants sur Paris par défaut
       loadRestaurants(center);
     }
@@ -73,7 +90,10 @@ function App() {
   const loadRestaurants = async (location) => {
     setLoading(true);
     setError(null);
+    
     try {
+      console.log("Chargement des restaurants à la position:", location);
+      
       // Charger les restaurants normaux
       const restaurantsData = await searchHalalRestaurants(location);
       setRestaurants(restaurantsData);
@@ -81,6 +101,13 @@ function App() {
       // Charger les restaurants tendance
       const trendingData = await getTrendingRestaurants(location);
       setTrendingRestaurants(trendingData);
+      
+      // Récupérer la liste des pays disponibles
+      const allRestaurants = [...restaurantsData, ...trendingData];
+      const countries = getAvailableCountries(allRestaurants);
+      setAvailableCountries(countries);
+      
+      console.log(`${restaurantsData.length} restaurants et ${trendingData.length} tendances chargés`);
       
     } catch (error) {
       console.error('Erreur lors du chargement des restaurants:', error);
@@ -123,8 +150,13 @@ function App() {
     setError(null);
     
     try {
-      const searchResults = await searchRestaurantsByText(query, center);
+      const searchResults = await searchRestaurantsByText(query, center, filters.country);
       setRestaurants(searchResults);
+      
+      // Mettre à jour les pays disponibles
+      const countries = getAvailableCountries(searchResults);
+      setAvailableCountries(countries);
+      
       setActiveTab('restaurants'); // Basculer sur l'onglet restaurants pour afficher les résultats
     } catch (error) {
       console.error('Erreur lors de la recherche:', error);
@@ -133,6 +165,40 @@ function App() {
       setLoading(false);
     }
   };
+
+  // Effet pour filtrer les restaurants par pays lorsque le filtre change
+  useEffect(() => {
+    const filterRestaurantsByCountry = async () => {
+      if (!userLocation && !center) return;
+      
+      const location = userLocation || center;
+      
+      if (filters.country) {
+        setLoading(true);
+        try {
+          // Filtrer les restaurants par pays
+          const filteredRestaurants = await searchRestaurantsByCountry(location, filters.country);
+          
+          if (activeTab === 'restaurants') {
+            setRestaurants(filteredRestaurants);
+          } else if (activeTab === 'trending') {
+            // Pour les tendances, recharger avec le filtre de pays
+            const trendingFiltered = await getTrendingRestaurants(location, filters.country);
+            setTrendingRestaurants(trendingFiltered);
+          }
+        } catch (error) {
+          console.error('Erreur lors du filtrage par pays:', error);
+        } finally {
+          setLoading(false);
+        }
+      } else if (filters.country === null && userLocation) {
+        // Si le filtre de pays est réinitialisé, recharger tous les restaurants
+        loadRestaurants(location);
+      }
+    };
+    
+    filterRestaurantsByCountry();
+  }, [filters.country]);
 
   // Effet initial pour charger les restaurants
   useEffect(() => {
@@ -188,6 +254,7 @@ function App() {
           error={error}
           activeTab={activeTab}
           searchQuery={searchQuery}
+          availableCountries={availableCountries}
         />
         <Map 
           restaurants={filteredRestaurants}
