@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import { cuisineTypes } from '../data/restaurants';
+import { cuisineTypes } from '../data/cuisineTypes';
+import CountryFilter from './CountryFilter';
 
 const SidebarContainer = styled.div`
   width: 100%;
@@ -139,6 +140,20 @@ const RestaurantDetails = styled.div`
   color: var(--text-light);
 `;
 
+const RestaurantMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  color: var(--text-light);
+`;
+
+const RestaurantCountry = styled.span`
+  color: var(--text-light);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+`;
+
 const RestaurantRating = styled.div`
   display: flex;
   align-items: center;
@@ -193,7 +208,8 @@ function Sidebar({
   loading, 
   error, 
   activeTab,
-  searchQuery 
+  searchQuery,
+  availableCountries
 }) {
   // Fonction pour gérer le changement de filtre de cuisine
   const handleCuisineChange = (cuisineId) => {
@@ -219,22 +235,43 @@ function Sidebar({
     });
   };
 
+  // Fonction pour gérer le changement de filtre de pays
+  const handleCountryChange = (country) => {
+    setFilters({
+      ...filters,
+      country: country === 'all' ? null : country,
+    });
+  };
+
   // Formatage du message pour l'affichage des résultats
   const getResultsMessage = () => {
+    let message = '';
+    
     if (searchQuery) {
-      return `Résultats pour "${searchQuery}" (${restaurants.length})`;
+      message = `Résultats pour "${searchQuery}"`;
+    } else if (activeTab === 'trending') {
+      message = `Restaurants tendance`;
+    } else {
+      message = 'Restaurants';
     }
     
-    if (activeTab === 'trending') {
-      return `Restaurants tendance (${restaurants.length})`;
+    if (filters.country) {
+      message += ` en ${filters.country}`;
     }
     
-    return `${restaurants.length} restaurant(s) trouvé(s)`;
+    return `${message} (${restaurants.length})`;
   };
 
   return (
     <SidebarContainer>
       <FiltersSection>
+        {/* Filtre par pays */}
+        <CountryFilter 
+          countries={availableCountries} 
+          selectedCountry={filters.country} 
+          onCountryChange={handleCountryChange}
+        />
+
         <FilterTitle>Filtrer par cuisine</FilterTitle>
         <CuisineFilter>
           {cuisineTypes.map((cuisine) => (
@@ -283,7 +320,8 @@ function Sidebar({
       <RestaurantsList>
         {loading ? (
           <LoadingContainer>
-            <div>Chargement des restaurants...</div>
+            <div className="loader"></div>
+            <div style={{ marginTop: '1rem' }}>Chargement des restaurants...</div>
           </LoadingContainer>
         ) : error ? (
           <ErrorContainer>
@@ -306,6 +344,9 @@ function Sidebar({
                 <RestaurantInfo>
                   <RestaurantName>{restaurant.name}</RestaurantName>
                   <RestaurantCuisine>{restaurant.cuisine}</RestaurantCuisine>
+                  {restaurant.country && restaurant.country !== "Non spécifié" && (
+                    <RestaurantCountry>{restaurant.country}</RestaurantCountry>
+                  )}
                 </RestaurantInfo>
               </RestaurantHeader>
               <RestaurantDetails>
