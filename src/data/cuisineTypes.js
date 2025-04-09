@@ -6,9 +6,9 @@ export const cuisineTypes = [
   { id: 'marocain', name: 'Marocain' },
   { id: 'syrien', name: 'Syrien' },
   { id: 'indien', name: 'Indien' },
-  { id: 'pakistanais', name: 'Pakistanais' },
   { id: 'méditerranéen', name: 'Méditerranéen' },
-  { id: 'africain', name: 'Africain' },
   { id: 'fast-food', name: 'Fast-Food' },
+  { id: 'pakistanais', name: 'Pakistanais' },
+  { id: 'africain', name: 'Africain' },
   { id: 'divers', name: 'Autres' },
 ];
