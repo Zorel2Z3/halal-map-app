@@ -28,10 +28,27 @@ const MapLoadingContainer = styled.div`
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   background-color: rgba(255, 255, 255, 0.7);
   z-index: 5;
+`;
+
+const LoaderElement = styled.div`
+  width: 48px;
+  height: 48px;
+  border: 5px solid #FFF;
+  border-bottom-color: var(--primary-color);
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  
+  @keyframes rotation {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 `;
 
 const containerStyle = {
@@ -73,10 +90,15 @@ const InfoWindowButton = styled.button`
   }
 `;
 
-// Récupérer la clé API Google Maps depuis les variables d'environnement
-const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-
 function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, userLocation }) {
+  // Récupérer la clé API Google Maps depuis les variables d'environnement
+  const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "VOTRE_CLE_API_ICI";
+  
+  // Ajouter des logs pour déboguer
+  console.log("Initialisation de la carte avec la clé API:", googleMapsApiKey ? "Clé API définie" : "Clé API manquante");
+  console.log("Centre de la carte:", center);
+  console.log("Nombre de restaurants à afficher:", restaurants ? restaurants.length : 0);
+
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: googleMapsApiKey,
@@ -93,6 +115,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
     zoomControl: true,
     streetViewControl: false,
     mapTypeControl: false,
+    fullscreenControl: true,
     styles: [
       {
         featureType: 'poi.business',
@@ -130,11 +153,14 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
 
   // Lorsque la carte est déchargée
   const onUnmount = useCallback(() => {
+    console.log("Carte démontée");
+    mapRef.current = null;
     setMap(null);
   }, []);
 
   // Lorsqu'un marker est cliqué
   const handleMarkerClick = (restaurant) => {
+    console.log("Marqueur cliqué:", restaurant.name);
     setInfoWindowRestaurant(restaurant);
   };
 
@@ -152,6 +178,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   // Centrer la carte sur le restaurant sélectionné
   useEffect(() => {
     if (selectedRestaurant && mapRef.current) {
+      console.log("Centrage sur le restaurant sélectionné:", selectedRestaurant.name);
       mapRef.current.panTo({
         lat: selectedRestaurant.location.lat,
         lng: selectedRestaurant.location.lng,
@@ -162,9 +189,11 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
 
   // Ajuster les limites de la carte pour montrer tous les restaurants
   useEffect(() => {
-    if (map && restaurants.length > 0 && !selectedRestaurant) {
+    if (map && restaurants && restaurants.length > 0 && !selectedRestaurant) {
       try {
+        console.log("Ajustement des limites de la carte pour", restaurants.length, "restaurants");
         const bounds = new window.google.maps.LatLngBounds();
+        let validLocationsCount = 0;
         
         restaurants.forEach(restaurant => {
           if (restaurant.location && restaurant.location.lat && restaurant.location.lng) {
@@ -172,6 +201,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
               restaurant.location.lat,
               restaurant.location.lng
             ));
+            validLocationsCount++;
           }
         });
         
@@ -181,14 +211,26 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
             userLocation.lat,
             userLocation.lng
           ));
+          validLocationsCount++;
         }
         
-        map.fitBounds(bounds);
+        console.log("Nombre de localisations valides:", validLocationsCount);
         
-        // Si les limites sont trop petites (un seul point), zoomer
-        const zoom = map.getZoom();
-        if (zoom > 15) {
-          map.setZoom(15);
+        if (validLocationsCount > 0) {
+          map.fitBounds(bounds);
+          
+          // Si les limites sont trop petites (un seul point), zoomer
+          const listener = window.google.maps.event.addListenerOnce(map, 'bounds_changed', function() {
+            const zoom = map.getZoom();
+            console.log("Zoom après ajustement des limites:", zoom);
+            if (zoom > 15) {
+              map.setZoom(15);
+            }
+          });
+          
+          return () => {
+            window.google.maps.event.removeListener(listener);
+          };
         }
       } catch (error) {
         console.error("Erreur lors de l'ajustement des limites de la carte:", error);
@@ -204,6 +246,20 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
           <h3>Erreur de chargement de la carte</h3>
           <p>Impossible de charger Google Maps. Veuillez vérifier votre connexion, votre clé API ou réessayer plus tard.</p>
           <p>Détail de l'erreur: {loadError.message}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{
+              marginTop: '1rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: 'var(--primary-color)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--border-radius)',
+              cursor: 'pointer'
+            }}
+          >
+            Rafraîchir la page
+          </button>
         </MapErrorContainer>
       </MapContainer>
     );
@@ -213,7 +269,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
     return (
       <MapContainer>
         <MapLoadingContainer>
-          <div className="loader"></div>
+          <LoaderElement />
           <p style={{ marginTop: '1rem' }}>Chargement de la carte...</p>
         </MapLoadingContainer>
       </MapContainer>
@@ -232,7 +288,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
       >
         {mapLoading && (
           <MapLoadingContainer>
-            <div className="loader"></div>
+            <LoaderElement />
             <p style={{ marginTop: '1rem' }}>Chargement de la carte...</p>
           </MapLoadingContainer>
         )}
@@ -249,7 +305,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
         )}
 
         {/* Marqueurs des restaurants */}
-        {restaurants.map((restaurant) => (
+        {restaurants && restaurants.map((restaurant) => (
           <Marker
             key={restaurant.id}
             position={restaurant.location}
@@ -279,9 +335,16 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
               <InfoWindowDetails>
                 <p>Cuisine: {infoWindowRestaurant.cuisine}</p>
                 <p>Note: {infoWindowRestaurant.rating.toFixed(1)} ★</p>
-                <p>Pays: {infoWindowRestaurant.country || 'Non spécifié'}</p>
+                {infoWindowRestaurant.country && infoWindowRestaurant.country !== "Non spécifié" && (
+                  <p>Pays: {infoWindowRestaurant.country}</p>
+                )}
                 <p>
-                  {infoWindowRestaurant.openNow ? '🟢 Ouvert' : infoWindowRestaurant.openNow === false ? '🔴 Fermé' : '⚪ Statut inconnu'}
+                  {infoWindowRestaurant.openNow 
+                    ? '🟢 Ouvert' 
+                    : infoWindowRestaurant.openNow === false 
+                      ? '🔴 Fermé' 
+                      : '⚪ Statut inconnu'
+                  }
                 </p>
               </InfoWindowDetails>
               <InfoWindowButton
