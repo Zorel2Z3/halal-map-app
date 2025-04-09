@@ -92,7 +92,7 @@ const InfoWindowButton = styled.button`
 
 function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, userLocation }) {
   // Récupérer la clé API Google Maps depuis les variables d'environnement
-  const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "VOTRE_CLE_API_ICI";
+  const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
   
   // Ajouter des logs pour déboguer
   console.log("Initialisation de la carte avec la clé API:", googleMapsApiKey ? "Clé API définie" : "Clé API manquante");
@@ -177,7 +177,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
 
   // Centrer la carte sur le restaurant sélectionné
   useEffect(() => {
-    if (selectedRestaurant && mapRef.current) {
+    if (selectedRestaurant && mapRef.current && selectedRestaurant.location) {
       console.log("Centrage sur le restaurant sélectionné:", selectedRestaurant.name);
       mapRef.current.panTo({
         lat: selectedRestaurant.location.lat,
