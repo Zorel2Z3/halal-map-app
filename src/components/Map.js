@@ -6,6 +6,10 @@ const MapContainer = styled.div`
   flex: 1;
   height: 100%;
   position: relative;
+  background-color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const MapErrorContainer = styled.div`
@@ -17,14 +21,15 @@ const MapErrorContainer = styled.div`
   padding: 1rem;
   border-radius: var(--border-radius);
   text-align: center;
-  max-width: 300px;
+  max-width: 500px;
   z-index: 10;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 `;
 
 const MapPlaceholder = styled.div`
   width: 100%;
   height: 100%;
-  background-color: #f3f3f3;
+  background-color: #eef2f7;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -32,6 +37,14 @@ const MapPlaceholder = styled.div`
   text-align: center;
   padding: 2rem;
   color: #666;
+`;
+
+const MapSimulation = styled.div`
+  width: 100%;
+  height: 100%;
+  background-color: #eef2f7;
+  position: relative;
+  overflow: hidden;
 `;
 
 const MapLoadingContainer = styled.div`
@@ -108,21 +121,55 @@ const RestaurantMarker = styled.div`
   position: absolute;
   width: 12px;
   height: 12px;
-  background-color: var(--primary-color);
+  background-color: ${props => props.isOpen ? '#4CAF50' : '#F44336'};
   border-radius: 50%;
   transform: translate(-50%, -50%);
   cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
 `;
 
 const UserMarker = styled.div`
   position: absolute;
   width: 15px;
   height: 15px;
-  background-color: blue;
+  background-color: #4285F4;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   cursor: pointer;
   border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+`;
+
+const SimulatedInfoWindow = styled.div`
+  position: absolute;
+  width: 200px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  z-index: 20;
+  transform: translate(-50%, -120%);
+  transition: opacity 0.2s ease;
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid white;
+  }
 `;
 
 function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, userLocation }) {
@@ -132,8 +179,11 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   // Vérifier si une clé API valide est disponible
   const hasValidApiKey = googleMapsApiKey && googleMapsApiKey !== 'VOTRE_CLE_API_ICI';
   
+  // Utilisons un mode de simulation si la clé n'est pas valide
+  const useSimulationMode = !hasValidApiKey;
+  
   // Ajouter des logs pour déboguer
-  console.log("Initialisation de la carte avec la clé API:", hasValidApiKey ? "Clé API définie" : "Clé API manquante");
+  console.log("Initialisation de la carte:", useSimulationMode ? "Mode simulation" : "Mode Google Maps");
   console.log("Centre de la carte:", center);
   console.log("Nombre de restaurants à afficher:", restaurants ? restaurants.length : 0);
 
@@ -141,12 +191,15 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: hasValidApiKey ? googleMapsApiKey : '',
-    libraries: ['places']
+    libraries: ['places'],
+    // Skip loading if we're in simulation mode
+    skipLoadingGoogleApi: useSimulationMode
   });
 
   const [map, setMap] = useState(null);
   const [infoWindowRestaurant, setInfoWindowRestaurant] = useState(null);
   const [mapLoading, setMapLoading] = useState(true);
+  const [simulatedCenter, setSimulatedCenter] = useState({ x: 50, y: 50 }); // Centre simulé en %
 
   // Styles personnalisés pour la carte
   const mapOptions = {
@@ -181,6 +234,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
 
   // Référence à la carte pour la centrer lorsque selectedRestaurant change
   const mapRef = useRef(null);
+  const simulationRef = useRef(null);
 
   // Lorsque la carte est chargée
   const onLoad = useCallback((map) => {
@@ -214,79 +268,87 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
     setInfoWindowRestaurant(null);
   };
 
-  // Centrer la carte sur le restaurant sélectionné
-  useEffect(() => {
-    if (selectedRestaurant && mapRef.current && selectedRestaurant.location) {
-      console.log("Centrage sur le restaurant sélectionné:", selectedRestaurant.name);
-      mapRef.current.panTo({
-        lat: selectedRestaurant.location.lat,
-        lng: selectedRestaurant.location.lng,
-      });
-      mapRef.current.setZoom(16);
+  // Calculer les positions simulées pour les marqueurs
+  const getSimulatedPosition = (restaurant, index) => {
+    if (!restaurant.location) return { x: 50, y: 50 };
+    
+    // Si on a un userLocation, on distribue les restaurants autour
+    if (userLocation) {
+      const angle = (index / (restaurants.length || 1)) * 2 * Math.PI;
+      const distance = 20 + Math.random() * 10; // Entre 20% et 30% du centre
+      return {
+        x: 50 + Math.cos(angle) * distance,
+        y: 50 + Math.sin(angle) * distance
+      };
     }
-  }, [selectedRestaurant]);
+    
+    // Sinon on distribue de façon plus aléatoire mais organisée
+    return {
+      x: 30 + (index % 5) * 10 + Math.random() * 5,
+      y: 30 + Math.floor(index / 5) * 10 + Math.random() * 5
+    };
+  };
 
-  // Ajuster les limites de la carte pour montrer tous les restaurants
-  useEffect(() => {
-    if (map && restaurants && restaurants.length > 0 && !selectedRestaurant) {
-      try {
-        console.log("Ajustement des limites de la carte pour", restaurants.length, "restaurants");
-        const bounds = new window.google.maps.LatLngBounds();
-        let validLocationsCount = 0;
-        
-        restaurants.forEach(restaurant => {
-          if (restaurant.location && restaurant.location.lat && restaurant.location.lng) {
-            bounds.extend(new window.google.maps.LatLng(
-              restaurant.location.lat,
-              restaurant.location.lng
-            ));
-            validLocationsCount++;
-          }
-        });
-        
-        // Si l'utilisateur a partagé sa position, l'inclure dans les limites
-        if (userLocation) {
-          bounds.extend(new window.google.maps.LatLng(
-            userLocation.lat,
-            userLocation.lng
-          ));
-          validLocationsCount++;
-        }
-        
-        console.log("Nombre de localisations valides:", validLocationsCount);
-        
-        if (validLocationsCount > 0) {
-          map.fitBounds(bounds);
-          
-          // Si les limites sont trop petites (un seul point), zoomer
-          const listener = window.google.maps.event.addListenerOnce(map, 'bounds_changed', function() {
-            const zoom = map.getZoom();
-            console.log("Zoom après ajustement des limites:", zoom);
-            if (zoom > 15) {
-              map.setZoom(15);
-            }
-          });
-          
-          return () => {
-            window.google.maps.event.removeListener(listener);
-          };
-        }
-      } catch (error) {
-        console.error("Erreur lors de l'ajustement des limites de la carte:", error);
-      }
-    }
-  }, [map, restaurants, userLocation, selectedRestaurant]);
-
-  // Si la clé API n'est pas définie, afficher un message d'erreur spécifique
-  if (!hasValidApiKey) {
+  // Si nous sommes en mode simulation, afficher une carte simulée
+  if (useSimulationMode) {
     return (
       <MapContainer>
         <MapErrorContainer>
-          <h3>Clé API Google Maps non configurée</h3>
-          <p>Pour afficher la carte, vous devez fournir une clé API Google Maps valide dans le fichier .env :</p>
-          <p>REACT_APP_GOOGLE_MAPS_API_KEY=votre_clé_api_ici</p>
-          <p>Vous pouvez obtenir une clé API sur la console Google Cloud Platform.</p>
+          <h3>Mode simulation</h3>
+          <p>La carte Google Maps ne peut pas être chargée car la clé API n'est pas configurée correctement.</p>
+          <p>Dans le fichier .env, remplacez VOTRE_CLE_API_ICI par une clé API Google Maps valide.</p>
+          <p>En attendant, nous affichons une simulation de carte pour vous permettre de tester l'application.</p>
         </MapErrorContainer>
+        <MapSimulation ref={simulationRef}>
+          {userLocation && (
+            <UserMarker style={{ left: '50%', top: '50%' }} />
+          )}
+          
+          {restaurants && restaurants.map((restaurant, index) => {
+            const position = getSimulatedPosition(restaurant, index);
+            return (
+              <React.Fragment key={restaurant.id}>
+                <RestaurantMarker 
+                  isOpen={restaurant.openNow}
+                  style={{ 
+                    left: `${position.x}%`, 
+                    top: `${position.y}%`,
+                    transform: selectedRestaurant && selectedRestaurant.id === restaurant.id
+                      ? 'translate(-50%, -50%) scale(1.4)'
+                      : 'translate(-50%, -50%)'
+                  }}
+                  onClick={() => handleMarkerClick(restaurant)}
+                />
+                
+                {infoWindowRestaurant && infoWindowRestaurant.id === restaurant.id && (
+                  <SimulatedInfoWindow style={{ left: `${position.x}%`, top: `${position.y}%` }}>
+                    <InfoWindowTitle>{infoWindowRestaurant.name}</InfoWindowTitle>
+                    <InfoWindowDetails>
+                      <p>Cuisine: {infoWindowRestaurant.cuisine}</p>
+                      <p>Note: {infoWindowRestaurant.rating.toFixed(1)} ★</p>
+                      {infoWindowRestaurant.country && infoWindowRestaurant.country !== "Non spécifié" && (
+                        <p>Pays: {infoWindowRestaurant.country}</p>
+                      )}
+                      <p>
+                        {infoWindowRestaurant.openNow 
+                          ? '🟢 Ouvert' 
+                          : infoWindowRestaurant.openNow === false 
+                            ? '🔴 Fermé' 
+                            : '⚪ Statut inconnu'
+                        }
+                      </p>
+                    </InfoWindowDetails>
+                    <InfoWindowButton
+                      onClick={() => handleViewDetails(infoWindowRestaurant)}
+                    >
+                      Voir détails
+                    </InfoWindowButton>
+                  </SimulatedInfoWindow>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </MapSimulation>
       </MapContainer>
     );
   }
