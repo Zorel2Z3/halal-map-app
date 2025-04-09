@@ -26,25 +26,16 @@ const MapErrorContainer = styled.div`
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 `;
 
-const MapPlaceholder = styled.div`
-  width: 100%;
-  height: 100%;
-  background-color: #eef2f7;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-`;
-
 const MapSimulation = styled.div`
   width: 100%;
   height: 100%;
-  background-color: #eef2f7;
   position: relative;
   overflow: hidden;
+  background-color: var(--map-background);
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
 `;
 
 const MapLoadingContainer = styled.div`
@@ -172,6 +163,19 @@ const SimulatedInfoWindow = styled.div`
   }
 `;
 
+const SimulationNotice = styled.div`
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  z-index: 5;
+`;
+
 function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, userLocation }) {
   // Récupérer la clé API Google Maps depuis les variables d'environnement
   const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
@@ -193,7 +197,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
     googleMapsApiKey: hasValidApiKey ? googleMapsApiKey : '',
     libraries: ['places'],
     // Skip loading if we're in simulation mode
-    skipLoadingGoogleApi: useSimulationMode
+    skipLoadingCallback: useSimulationMode
   });
 
   const [map, setMap] = useState(null);
@@ -293,12 +297,6 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   if (useSimulationMode) {
     return (
       <MapContainer>
-        <MapErrorContainer>
-          <h3>Mode simulation</h3>
-          <p>La carte Google Maps ne peut pas être chargée car la clé API n'est pas configurée correctement.</p>
-          <p>Dans le fichier .env, remplacez VOTRE_CLE_API_ICI par une clé API Google Maps valide.</p>
-          <p>En attendant, nous affichons une simulation de carte pour vous permettre de tester l'application.</p>
-        </MapErrorContainer>
         <MapSimulation ref={simulationRef}>
           {userLocation && (
             <UserMarker style={{ left: '50%', top: '50%' }} />
@@ -348,7 +346,16 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
               </React.Fragment>
             );
           })}
+          <SimulationNotice>
+            Mode simulation ⚠️ Configurez la clé API Google Maps pour une expérience complète
+          </SimulationNotice>
         </MapSimulation>
+        <MapErrorContainer>
+          <h3>Mode simulation</h3>
+          <p>La carte Google Maps ne peut pas être chargée car la clé API n'est pas configurée correctement.</p>
+          <p>Dans le fichier .env, remplacez VOTRE_CLE_API_ICI par une clé API Google Maps valide.</p>
+          <p>En attendant, nous affichons une simulation de carte pour vous permettre de tester l'application.</p>
+        </MapErrorContainer>
       </MapContainer>
     );
   }
