@@ -176,6 +176,22 @@ const SimulationNotice = styled.div`
   z-index: 5;
 `;
 
+const RetryButton = styled.button`
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--secondary-color);
+  }
+`;
+
 function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, userLocation }) {
   // Récupérer la clé API Google Maps depuis les variables d'environnement
   const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
@@ -184,10 +200,14 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   const hasValidApiKey = googleMapsApiKey && googleMapsApiKey !== 'VOTRE_CLE_API_ICI';
   
   // Utilisons un mode de simulation si la clé n'est pas valide
-  const useSimulationMode = !hasValidApiKey;
+  const [useSimulationMode, setUseSimulationMode] = useState(!hasValidApiKey);
+  
+  // État pour suivre les tentatives de chargement
+  const [loadAttempts, setLoadAttempts] = useState(0);
   
   // Ajouter des logs pour déboguer
   console.log("Initialisation de la carte:", useSimulationMode ? "Mode simulation" : "Mode Google Maps");
+  console.log("Clé API configurée:", hasValidApiKey ? "Oui" : "Non");
   console.log("Centre de la carte:", center);
   console.log("Nombre de restaurants à afficher:", restaurants ? restaurants.length : 0);
 
@@ -201,6 +221,7 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   const [map, setMap] = useState(null);
   const [infoWindowRestaurant, setInfoWindowRestaurant] = useState(null);
   const [mapLoading, setMapLoading] = useState(!useSimulationMode);
+  const [loadErrorMessage, setLoadErrorMessage] = useState(null);
   
   // Styles personnalisés pour la carte
   const mapOptions = {
@@ -236,6 +257,25 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
   // Référence à la carte pour la centrer lorsque selectedRestaurant change
   const mapRef = useRef(null);
   const simulationRef = useRef(null);
+
+  // Effet pour centrer la carte sur le restaurant sélectionné
+  useEffect(() => {
+    if (selectedRestaurant && mapRef.current) {
+      mapRef.current.panTo({
+        lat: selectedRestaurant.location.lat,
+        lng: selectedRestaurant.location.lng
+      });
+      mapRef.current.setZoom(16);
+    }
+  }, [selectedRestaurant]);
+
+  // Fonction pour réessayer le chargement de la carte
+  const retryLoading = () => {
+    setLoadAttempts(prev => prev + 1);
+    setUseSimulationMode(false);
+    setMapLoading(true);
+    setLoadErrorMessage(null);
+  };
 
   // Lorsque la carte est chargée
   const onLoad = useCallback((map) => {
@@ -289,6 +329,32 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
       y: 30 + Math.floor(index / 5) * 10 + Math.random() * 5
     };
   };
+
+  // Gérer les erreurs spécifiques de Google Maps
+  useEffect(() => {
+    if (loadError) {
+      console.error("Erreur de chargement de Google Maps:", loadError);
+      
+      let errorMessage = "Impossible de charger Google Maps.";
+      
+      // Analyser les messages d'erreur courants et donner des conseils spécifiques
+      if (loadError.message && loadError.message.includes("MissingKeyMapError")) {
+        errorMessage = "Clé API Google Maps manquante ou invalide.";
+      } else if (loadError.message && loadError.message.includes("RefererNotAllowedMapError")) {
+        errorMessage = "L'URL de ce site n'est pas autorisée pour cette clé API Google Maps.";
+      } else if (loadError.message && loadError.message.includes("InvalidKeyMapError")) {
+        errorMessage = "La clé API Google Maps est invalide.";
+      } else if (loadError.message && loadError.message.includes("ExpiredKeyMapError")) {
+        errorMessage = "La clé API Google Maps a expiré.";
+      } else if (loadError.message && loadError.message.includes("ApiNotActivatedMapError")) {
+        errorMessage = "L'API Google Maps n'est pas activée pour cette clé.";
+      }
+      
+      setLoadErrorMessage(errorMessage);
+      setUseSimulationMode(true);
+      setMapLoading(false);
+    }
+  }, [loadError, loadAttempts]);
 
   // Si nous sommes en mode simulation, afficher une carte simulée
   if (useSimulationMode) {
@@ -344,42 +410,17 @@ function Map({ restaurants, selectedRestaurant, setSelectedRestaurant, center, u
             );
           })}
           <SimulationNotice>
-            Mode simulation ⚠️ Configurez la clé API Google Maps pour une expérience complète
+            Mode simulation ⚠️ La carte interactive ne peut pas être chargée
           </SimulationNotice>
         </MapSimulation>
         <MapErrorContainer>
-          <h3>Mode simulation</h3>
-          <p>La carte Google Maps ne peut pas être chargée car la clé API n'est pas configurée correctement.</p>
-          <p>Dans le fichier .env, remplacez VOTRE_CLE_API_ICI par une clé API Google Maps valide.</p>
-          <p>En attendant, nous affichons une simulation de carte pour vous permettre de tester l'application.</p>
-        </MapErrorContainer>
-      </MapContainer>
-    );
-  }
-
-  // Si une erreur de chargement s'est produite
-  if (loadError) {
-    console.error("Erreur de chargement de Google Maps:", loadError);
-    return (
-      <MapContainer>
-        <MapErrorContainer>
-          <h3>Erreur de chargement de la carte</h3>
-          <p>Impossible de charger Google Maps. Veuillez vérifier votre connexion, votre clé API ou réessayer plus tard.</p>
-          <p>Détail de l'erreur: {loadError.message}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            style={{
-              marginTop: '1rem',
-              padding: '0.5rem 1rem',
-              backgroundColor: 'var(--primary-color)',
-              color: 'white',
-              border: 'none',
-              borderRadius: 'var(--border-radius)',
-              cursor: 'pointer'
-            }}
-          >
-            Rafraîchir la page
-          </button>
+          <h3>La carte n'a pas pu être chargée</h3>
+          {loadErrorMessage && <p>{loadErrorMessage}</p>}
+          {!loadErrorMessage && <p>Vérifiez que votre clé API Google Maps est correctement configurée et que les APIs nécessaires sont activées.</p>}
+          <p>Les APIs requises sont: Maps JavaScript API, Places API, et Geocoding API.</p>
+          <RetryButton onClick={retryLoading}>
+            Réessayer de charger la carte
+          </RetryButton>
         </MapErrorContainer>
       </MapContainer>
     );
