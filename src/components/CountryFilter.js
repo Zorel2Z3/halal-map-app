@@ -63,7 +63,7 @@ const CountryFilter = ({ countries, selectedCountry, onCountryChange }) => {
       <FilterTitle>Filtrer par pays</FilterTitle>
       <CountrySelect 
         value={selectedCountry || 'all'} 
-        onChange={(e) => onCountryChange(e.target.value)}
+        onChange={(e) => onCountryChange(e.target.value === 'all' ? null : e.target.value)}
       >
         <option value="all">Tous les pays</option>
         {countries.map((country) => (
